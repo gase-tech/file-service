@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	_extstore "github.com/bilalkocoglu/eureka-client/store"
 	_const "github.com/imminoglobulin/e-commerce-backend/file-service/pkg/const"
 	"github.com/imminoglobulin/e-commerce-backend/file-service/pkg/helper"
-	"github.com/imminoglobulin/e-commerce-backend/file-service/pkg/store"
 	"github.com/rs/zerolog/log"
 )
 
@@ -24,8 +24,8 @@ type CustomerServiceAccessor struct {
 func (c CustomerServiceAccessor) GetCustomerById(customerId string) (*CustomerResource, error) {
 	path := "/api/customer/by-id"
 	url := ""
-	if store.RegisteredServices != nil {
-		url = store.RegisteredServices.GetServiceUrl(_const.CUSTOMER_SERVICE)
+	if _extstore.RegisteredServices != nil {
+		url = _extstore.RegisteredServices.GetServiceUrl(_const.CUSTOMER_SERVICE)
 	}
 
 	if url == "" {
