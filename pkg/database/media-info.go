@@ -1,16 +1,16 @@
 package database
 
 import (
-	"errors"
 	"github.com/imminoglobulin/e-commerce-backend/file-service/pkg/helper"
 	"github.com/imminoglobulin/e-commerce-backend/file-service/pkg/store"
 	"github.com/rs/zerolog/log"
+	uuid "github.com/satori/go.uuid"
 	"math"
 	"time"
 )
 
 type MediaInfo struct {
-	ID          uint      `gorm:"primarykey" json:"id"`
+	ID          uuid.UUID `gorm:"primary_key" json:"id"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 	CustomerID  string    `json:"customerId"`
@@ -32,10 +32,6 @@ func (m MediaInfoDao) Save(info *MediaInfo) error {
 		return err
 	}
 
-	if equivalentInfo.ID != 0 {
-		return errors.New("This file name already exist")
-	}
-
 	err = store.Connection.Create(info).Error
 
 	if err != nil {
@@ -46,7 +42,7 @@ func (m MediaInfoDao) Save(info *MediaInfo) error {
 	}
 }
 
-func (m MediaInfoDao) DeleteByID(id uint) {
+func (m MediaInfoDao) DeleteByID(id uuid.UUID) {
 	store.Connection.Delete(&MediaInfo{}, id)
 }
 
@@ -60,7 +56,7 @@ func (m MediaInfoDao) FindByName(info *MediaInfo, name string) error {
 	}
 }
 
-func (m MediaInfoDao) FindByID(info *MediaInfo, id uint) error {
+func (m MediaInfoDao) FindByID(info *MediaInfo, id uuid.UUID) error {
 	err := store.Connection.Where("id = ?", id).Find(info).Error
 
 	if err != nil {

@@ -6,6 +6,8 @@ import (
 	"github.com/imminoglobulin/e-commerce-backend/file-service/pkg/model"
 	"github.com/imminoglobulin/e-commerce-backend/file-service/pkg/security"
 	"github.com/imminoglobulin/e-commerce-backend/file-service/pkg/service"
+	"github.com/rs/zerolog/log"
+	uuid "github.com/satori/go.uuid"
 	"net/http"
 	"strconv"
 )
@@ -46,8 +48,17 @@ func UploadFile(ctx *gin.Context) {
 
 func DeleteFile(ctx *gin.Context) {
 	id := ctx.Param("id")
+	uid, err := uuid.FromString(id)
 
-	err := service.DeleteFile(id)
+	if err != nil {
+		log.Err(err).Msg(err.Error())
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, model.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	err = service.DeleteFile(uid)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, model.BaseResponse{
@@ -93,8 +104,17 @@ func GetMediaInfoPageable(ctx *gin.Context) {
 
 func GetMediaInfoById(ctx *gin.Context) {
 	id := ctx.Param("id")
+	uid, err := uuid.FromString(id)
 
-	byId, err := service.GetMediaInfoById(id)
+	if err != nil {
+		log.Err(err).Msg(err.Error())
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, model.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	byId, err := service.GetMediaInfoById(uid)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, model.BaseResponse{
@@ -109,8 +129,17 @@ func GetMediaInfoById(ctx *gin.Context) {
 
 func GetMediaContent(ctx *gin.Context) {
 	id := ctx.Param("id")
+	uid, err := uuid.FromString(id)
 
-	object, info, err := service.GetMediaContent(id)
+	if err != nil {
+		log.Err(err).Msg(err.Error())
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, model.BaseResponse{
+			Message: err.Error(),
+		})
+		return
+	}
+
+	object, info, err := service.GetMediaContent(uid)
 
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, model.BaseResponse{

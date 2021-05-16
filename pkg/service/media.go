@@ -6,9 +6,9 @@ import (
 	"github.com/imminoglobulin/e-commerce-backend/file-service/pkg/store"
 	"github.com/minio/minio-go/v7"
 	"github.com/rs/zerolog/log"
+	uuid "github.com/satori/go.uuid"
 	"io"
 	"mime/multipart"
-	"strconv"
 	"strings"
 )
 
@@ -22,12 +22,13 @@ func UploadFile(
 	size int64,
 	customerID string,
 	tenantID string,
-) (uint, error) {
+) (string, error) {
 	if extension != "" {
 		fileName += "." + extension
 	}
 
 	mediaInfo := database.MediaInfo{
+		ID:          uuid.NewV4(),
 		Name:        fileName,
 		CustomerID:  customerID,
 		TenantID:    tenantID,
@@ -39,7 +40,7 @@ func UploadFile(
 
 	if err != nil {
 		log.Err(err).Msg("Can not save media info.")
-		return 0, err
+		return "", err
 	}
 
 	_, err = UploadStorage(store.AppConfig.MinioConfig.MainBucketName, fileName, size, file)
@@ -47,10 +48,10 @@ func UploadFile(
 	if err != nil {
 		log.Err(err)
 		MediaInfoDao.DeleteByID(mediaInfo.ID)
-		return 0, err
+		return "", err
 	}
 
-	return mediaInfo.ID, nil
+	return mediaInfo.ID.String(), nil
 }
 
 func FindFileExtension(file multipart.FileHeader) string {
@@ -65,21 +66,12 @@ func FindFileExtension(file multipart.FileHeader) string {
 	}
 }
 
-func DeleteFile(id string) error {
-	parseUint, err := strconv.ParseUint(id, 10, 32)
+func DeleteFile(id uuid.UUID) error {
+	var info database.MediaInfo
+	err := MediaInfoDao.FindByID(&info, id)
 
 	if err != nil {
 		log.Err(err)
-		return errors.New("Id param must be numeric")
-	}
-
-	var info database.MediaInfo
-	err = MediaInfoDao.FindByID(&info, uint(parseUint))
-
-	if err != nil || info.ID == 0 {
-		if err != nil {
-			log.Err(err)
-		}
 		return errors.New("Record not found")
 	}
 
@@ -89,7 +81,7 @@ func DeleteFile(id string) error {
 		return err
 	}
 
-	MediaInfoDao.DeleteByID(uint(parseUint))
+	MediaInfoDao.DeleteByID(id)
 
 	return nil
 }
@@ -98,16 +90,10 @@ func PageableMediaInfos(page int, size int) interface{} {
 	return MediaInfoDao.GetPageable(page, size)
 }
 
-func GetMediaInfoById(id string) (database.MediaInfo, error) {
+func GetMediaInfoById(id uuid.UUID) (database.MediaInfo, error) {
 	var info database.MediaInfo
 
-	u64, err := strconv.ParseUint(id, 10, 32)
-
-	if err != nil {
-		return info, err
-	}
-
-	err = MediaInfoDao.FindByID(&info, uint(u64))
+	err := MediaInfoDao.FindByID(&info, id)
 
 	if err != nil {
 		return info, err
@@ -116,16 +102,10 @@ func GetMediaInfoById(id string) (database.MediaInfo, error) {
 	return info, nil
 }
 
-func GetMediaContent(id string) (*minio.Object, database.MediaInfo, error) {
-	u64, err := strconv.ParseUint(id, 10, 32)
-
-	if err != nil {
-		return &minio.Object{}, database.MediaInfo{}, err
-	}
-
+func GetMediaContent(id uuid.UUID) (*minio.Object, database.MediaInfo, error) {
 	var info database.MediaInfo
 
-	err = MediaInfoDao.FindByID(&info, uint(u64))
+	err := MediaInfoDao.FindByID(&info, id)
 
 	if err != nil {
 		return &minio.Object{}, database.MediaInfo{}, err
