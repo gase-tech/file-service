@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func setMinioConfigForCloud(cloudConfig model.CloudConfig, cfg *store.ApplicationConfig)  {
+func setMinioConfigForCloud(cloudConfig model.CloudConfig, cfg *store.ApplicationConfig) {
 	for _, s := range cloudConfig.PropertySources {
 		url := s.Source["minio.url"]
 		if cfg.MinioConfig.URL == "" && url != nil && url != "" {
@@ -35,7 +35,8 @@ func setMinioConfigForCloud(cloudConfig model.CloudConfig, cfg *store.Applicatio
 
 func ConnectMinio(cfg store.MinioConfig) {
 	client, err := minio.New(cfg.URL, &minio.Options{
-		Creds: credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
+		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
+		Secure: true,
 	})
 	if err != nil {
 		log.Err(err).Msg("Can not create minio client.")

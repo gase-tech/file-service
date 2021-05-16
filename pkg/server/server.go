@@ -7,21 +7,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func StartServer() {
+func StartServer(useCorsProtection bool) {
 	server := gin.New()
-	/*
-	server.Use(cors.Middleware(cors.Config{
-		// Origins:        "*",
-		Methods:        "GET, PUT, POST, DELETE, OPTION",
-		RequestHeaders: "Origin, Authorization, Content-Type, currentCustomerId, currentTenantId, instance-id, authorization",
-		ExposedHeaders: "",
-		MaxAge: 50 * time.Second,
-		Credentials: false,
-		ValidateHeaders: false,
-	}))
-	 */
+	if useCorsProtection {
+		server.Use(middleware.CORSMiddleware())
+	}
 	server.Use(middleware.Logger(), middleware.RequestID())
-	// server.Use(middleware.CORSMiddleware(), middleware.Logger(), middleware.RequestID())
 	server.MaxMultipartMemory = 300 << 20 // 100MiB
 
 	setHealthHandlers(server)

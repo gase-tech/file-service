@@ -44,7 +44,7 @@ func PrepareAppConfig() {
 
 	ConnectDB(*cfg.DBConfig)
 	ConnectMinio(*cfg.MinioConfig)
-	// TODO: add CONSUL and EUREKA registry types
+
 	if cfg.IsConnectServiceRegistry {
 		registryCfg.AppPort = cfg.Port
 		registryCfg.AppName = cfg.ApplicationName
