@@ -36,7 +36,7 @@ func setMinioConfigForCloud(cloudConfig model.CloudConfig, cfg *store.Applicatio
 func ConnectMinio(cfg store.MinioConfig) {
 	client, err := minio.New(cfg.URL, &minio.Options{
 		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
-		Secure: true,
+		Secure: cfg.Secure,
 	})
 	if err != nil {
 		log.Err(err).Msg("Can not create minio client.")
